@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: agency-invoka-api
+    env: node
+    region: ohio
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: INVOKA_API_KEY
+        sync: false
+      - key: PORT
+        value: 3000
+      - key: INVOKA_BASE_URL
+        value: https://www.invoka.com.ec/api
+      - key: DEFAULT_AMBIENTE
+        value: 1

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoka API - Prueba Facturas</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f5f7fa; color: #333; padding: 20px; }
+.container { max-width: 900px; margin: 0 auto; }
+header { background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; padding: 2rem; border-radius: 10px; margin-bottom: 1.5rem; }
+header h1 { font-size: 1.6rem; margin-bottom: 0.5rem; }
+.card { background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 1.5rem; overflow: hidden; }
+.card-header { background: #f8fafc; padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: #1e3a8a; }
+.card-body { padding: 1.5rem; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+.form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.form-group label { font-size: 0.85rem; font-weight: 600; color: #475569; }
+.form-group input, .form-group select { padding: 0.6rem 0.8rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; background: #f8fafc; }
+.form-group input:focus { outline: none; border-color: #3b82f6; }
+.btn { background: #1e3a8a; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; cursor: pointer; }
+.btn:hover { background: #1e40af; }
+.btn-group { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+.result-area { margin-top: 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 1rem; display: none; }
+.result-area.show { display: block; }
+.result-header { font-weight: 600; color: #1e3a8a; margin-bottom: 0.75rem; display: flex; justify-content: space-between; }
+.badge-ok { background: #dcfce7; color: #166534; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+.badge-error { background: #fee2e2; color: #991b1b; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+pre { background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; max-height: 300px; overflow-y: auto; }
+.tabs { display: flex; gap: 0; margin-bottom: 1rem; border-bottom: 1px solid #e2e8f0; }
+.tab { padding: 0.75rem 1.25rem; background: #f1f5f9; cursor: pointer; font-weight: 600; color: #64748b; border-bottom: 2px solid transparent; }
+.tab.active { background: white; color: #1e3a8a; border-bottom-color: #3b82f6; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.alert { padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem; }
+.alert-info { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>🧾 Invoka API — Prueba de Emisión</h1>
+<p>Facturación electrónica Ecuador (SRI) · Ambiente 1 = Pruebas GRATIS</p>
+</header>
+
+<div class="alert alert-info" id="envNote">
+⚠️ Configura tu <code>INVOKA_API_KEY</code> en <code>.env</code> y reinicia el servidor (Panel → Perfil).
+</div>
+
+<div class="tabs">
+<div class="tab active" onclick="switchTab('factura')">Factura (01)</div>
+<div class="tab" onclick="switchTab('consulta')">Consulta Comprobante</div>
+</div>
+
+<div id="tab-factura" class="tab-content active">
+<div class="card">
+<div class="card-header">Emisión de Factura Electrónica — POST /api/factura/emision</div>
+<div class="card-body">
+<div class="form-grid">
+<div class="form-group"><label>Ambiente <span style="color:#ef4444">*</span></label><select id="f_ambiente"><option value="1">1 - Pruebas</option><option value="2">2 - Producción</option></select></div>
+<div class="form-group"><label>RUC Emisor <span style="color:#ef4444">*</span></label><input type="text" id="f_emisor_ruc" placeholder="1792345678001" value="1792345678001"></div>
+<div class="form-group"><label>Razón Social Emisor</label><input type="text" id="f_emisor_razon_social" value="MI EMPRESA S.A."></div>
+<div class="form-group"><label>Nombre Comercial</label><input type="text" id="f_emisor_nombre_comercial" value="EMPRESA PRUEBA"></div>
+<div class="form-group"><label>Cód. Establecimiento <span style="color:#ef4444">*</span></label><input type="text" id="f_emisor_cod_est" value="003" maxlength="3"></div>
+<div class="form-group"><label>Cód. Punto Emisión <span style="color:#ef4444">*</span></label><input type="text" id="f_emisor_cod_punto" value="003" maxlength="3"></div>
+<div class="form-group"><label>Secuencial <span style="color:#ef4444">*</span></label><input type="text" id="f_emisor_secuencial" value="000002001" maxlength="9"></div>
+<div class="form-group"><label>Fecha Emisión (YYYY/MM/DD) <span style="color:#ef4444">*</span></label><input type="text" id="f_emisor_fecha" placeholder="2025/07/30"></div>
+<div class="form-group"><label>Dirección Matriz</label><input type="text" id="f_emisor_dir_matriz" value="QUITO - ECUADOR"></div>
+<div class="form-group"><label>Dirección Establecimiento</label><input type="text" id="f_emisor_dir_est" value="QUITO - ECUADOR"></div>
+<div class="form-group"><label>Obligado Contabilidad</label><select id="f_emisor_obligado"><option>SI</option><option>NO</option></select></div>
+<div class="form-group"><label>Identif. Comprador <span style="color:#ef4444">*</span></label><input type="text" id="f_comprador_identificacion" value="9999999999999"></div>
+<div class="form-group"><label>Tipo Identif. Comprador</label><select id="f_comprador_tipo_ident"><option value="07">07 - Consumidor Final</option><option value="04">04 - RUC</option><option value="05">05 - Cédula</option></select></div>
+<div class="form-group"><label>Razón Social Comprador <span style="color:#ef4444">*</span></label><input type="text" id="f_comprador_razon_social" value="CONSUMIDOR FINAL"></div>
+<div class="form-group"><label>Dirección Comprador <span style="color:#ef4444">*</span></label><input type="text" id="f_comprador_direccion" value="QUITO"></div>
+<div class="form-group"><label>Correo Comprador</label><input type="email" id="f_comprador_correo" value="cliente@ejemplo.com"></div>
+</div>
+</div>
+</div>
+
+<div style="margin-top:1.5rem; border-top:1px solid #e2e8f0; padding-top:1rem;">
+<h3 style="margin-bottom:1rem; font-size:1rem; color:#475569;">Ítem del Producto</h3>
+<div class="form-grid">
+<div class="form-group"><label>Código Principal</label><input type="text" id="f_item_codigo" value="PROD001"></div>
+<div class="form-group"><label>Descripción</label><input type="text" id="f_item_descripcion" value="Producto de prueba"></div>
+<div class="form-group"><label>Cantidad</label><input type="number" id="f_item_cantidad" value="1" step="0.01"></div>
+<div class="form-group"><label>Precio Unitario</label><input type="number" id="f_item_precio" value="10" step="0.01"></div>
+<div class="form-group"><label>Descuento</label><input type="number" id="f_item_descuento" value="0" step="0.01"></div>
+<div class="form-group"><label>Tipo IVA</label><select id="f_item_tipo_iva"><option value="2">2 - IVA 12%</option><option value="0">0 - Sin IVA</option></select></div>
+<div class="form-group"><label>Tipo Producto</label><input type="number" id="f_item_tipo_producto" value="1"></div>
+</div>
+</div>
+
+<div class="btn-group">
+<button class="btn" onclick="emitirFactura()">Emitir Factura</button>
+<button class="btn" style="background:transparent;color:#1e3a8a;border:1px solid #1e3a8a;" onclick="cargarEjemplo()">Cargar Ejemplo</button>
+<button class="btn" style="background:transparent;color:#64748b;border:1px solid #64748b;" onclick="location.reload()">Limpiar</button>
+</div>
+</div>
+</div>
+</div>
+<div id="resultado-factura" class="result-area"></div>
+</div>
+</div>
+
+<div id="tab-consulta" class="tab-content">
+<div class="card">
+<div class="card-header">Consultar Estado — GET /api/comprobante/consulta/{clave}</div>
+<div class="card-body">
+<div class="form-grid">
+<div class="form-group" style="grid-column: span 2;"><label>Clave de Acceso (49 dígitos) <span style="color:#ef4444">*</span></label><input type="text" id="c_claveacceso" placeholder="3007202501179234567800110020020000000001234567818"></div>
+</div>
+<div class="btn-group">
+<button class="btn" onclick="consultarComprobante()">Consultar Estado</button>
+</div>
+</div>
+</div>
+</div>
+<div id="resultado-consulta" class="result-area"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
